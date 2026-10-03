@@ -422,18 +422,23 @@ enum eWeaponState : uint32 {
 #pragma pack(push, 1)
 struct CWeapon
 {
-	uint32 dwType;
-	uint32 dwState;
-	uint32_t dwAmmoInClip;
-	uint32_t dwAmmo;
-	uint32_t m_nTimer;
-	bool m_bFirstPersonWeaponModeSelected;
-	bool m_bDontPlaceInHand;
-	uint8_t pad[2];
-	uintptr_t *m_pWeaponFxSys;
+    uint32 dwType;
+    uint32 dwState;
+    uint32_t dwAmmoInClip;
+    uint32_t dwAmmo;
+    uint32_t m_nTimer;
+    bool m_bFirstPersonWeaponModeSelected;
+    bool m_bDontPlaceInHand;
+    uint8_t pad[2];
+    uintptr_t m_pWeaponFxSys;
+
+#if VER_x32
+    uint8_t pad_x32[4];
+#endif
 };
 #pragma pack(pop)
-static_assert(sizeof(CWeapon) == 0x20, "Invalid size CPlaceable");
+
+static_assert(sizeof(CWeapon) == 0x20, "Invalid size CWeapon");
 
 //-----------------------------------------------------------
 
