@@ -1020,7 +1020,7 @@ void HookCPad()
 
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_Hud_WeaponChanged(JNIEnv *env, jobject thiz) {
+    JNIEXPORT void JNICALL Java_com_arcoroleplay_game_ui_Hud_WeaponChanged(JNIEnv *env, jobject thiz) {
         if (!pGame->FindPlayerPed()) return;
 
         if (!bWeaponClicked) {
@@ -1029,7 +1029,7 @@ extern "C" {
             bWeaponClicked = false;
         }
     }
-    JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_tab_Tab_onTabClose(JNIEnv *pEnv, jobject thiz) {
+    JNIEXPORT void JNICALL Java_com_arcoroleplay_game_ui_tab_Tab_onTabClose(JNIEnv *pEnv, jobject thiz) {
         pScoreBoard->Close();
     }
 }

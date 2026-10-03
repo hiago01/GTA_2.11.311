@@ -12,7 +12,7 @@ CSettings::CSettings()
 	FLog("Loading settings..");	
 
 	char buff[0x7F];
-	sprintf(buff, "/storage/emulated/0/Android/media/com.kurdish.roleplay/SAMP/settings.ini");
+	sprintf(buff, "/storage/emulated/0/Android/media/com.arcoroleplay/SAMP/settings.ini");
 
 	INIReader reader(buff);
 

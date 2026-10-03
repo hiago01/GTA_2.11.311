@@ -5,5 +5,5 @@ pluginManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Kurdish RolePlay"
+rootProject.name = "ArcoRoleplay"
 include ':app'

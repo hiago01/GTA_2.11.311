@@ -7,9 +7,9 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import com.kurdish.roleplay.game.ui.Hud;
-import com.kurdish.roleplay.game.ui.Speedometer;
-import com.kurdish.roleplay.game.ui.tab.Tab;
+import com.arcoroleplay.game.ui.Hud;
+import com.arcoroleplay.game.ui.Speedometer;
+import com.arcoroleplay.game.ui.tab.Tab;
 import com.rockstargames.oswrapper.view.InputHandler;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;

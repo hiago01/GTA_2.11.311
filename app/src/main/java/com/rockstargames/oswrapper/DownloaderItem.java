@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.kurdish.roleplay.R;
+import com.arcoroleplay.R;
 
 import java.util.ArrayList;
 import java.util.List;

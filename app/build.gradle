@@ -17,10 +17,10 @@ android {
         }
     }
 
-    namespace 'com.kurdish.roleplay'
+    namespace 'com.arcoroleplay'
 
     defaultConfig {
-        applicationId "com.kurdish.roleplay"
+        applicationId "com.arcoroleplay"
         minSdk 28
         targetSdk 36
         versionCode 1

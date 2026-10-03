@@ -1388,7 +1388,7 @@ void ApplyFPSPatch(uint8_t fps);
 void (*NvUtilInit)();
 void NvUtilInit_hook() {
     FLog("NvUtilInit");
-    g_pszStorage = "/storage/emulated/0/Android/media/com.kurdish.roleplay/";
+    g_pszStorage = "/storage/emulated/0/Android/media/com.arcoroleplay/";
 
     LOGI("Storage located at %s", g_pszStorage);
     NvUtilInit();
@@ -1409,7 +1409,7 @@ stFile* NvFOpen(const char *r1)
 {
     LOGI("NvFOpen %s", r1);
     strcpy(lastFile, r1);
-    g_pszStorage = "/storage/emulated/0/Android/media/com.kurdish.roleplay/";
+    g_pszStorage = "/storage/emulated/0/Android/media/com.arcoroleplay/";
     static char path[255]{};
     memset(path, 0, sizeof(path));
 

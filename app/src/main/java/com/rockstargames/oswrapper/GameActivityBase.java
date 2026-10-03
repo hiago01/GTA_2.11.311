@@ -21,14 +21,14 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.kurdish.roleplay.game.ui.Hud;
-import com.kurdish.roleplay.game.ui.Speedometer;
-import com.kurdish.roleplay.game.ui.tab.Tab;
+import com.arcoroleplay.game.ui.Hud;
+import com.arcoroleplay.game.ui.Speedometer;
+import com.arcoroleplay.game.ui.tab.Tab;
 import com.nvidia.devtech.NvAPKFile;
 import com.nvidia.devtech.NvAPKFileHelper;
 import com.nvidia.devtech.NvUtil;
 import com.rockstargames.gtasa.MainActivity;
-import com.kurdish.roleplay.R;
+import com.arcoroleplay.R;
 
 
 import java.io.File;
@@ -169,7 +169,7 @@ public abstract class GameActivityBase extends AppCompatActivity {
     public String GetGameBaseDirectory() {
         // Standard path: /storage/emulated/0/Documents/SampMobile/
         File documentsDir = new File("/storage/emulated/0/Android/media/");
-        File gameDir = new File(documentsDir, "com.kurdish.roleplay");
+        File gameDir = new File(documentsDir, "com.arcoroleplay");
 
         try {
             if (!gameDir.exists()) {

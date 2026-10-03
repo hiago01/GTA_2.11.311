@@ -9,7 +9,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.kurdish.roleplay" />
+                  <option name="appId" value="com.arcoroleplay" />
                   <option name="mobileSdkAppId" value="1:757123888015:android:009e71fb232e512edf91fa" />
                   <option name="projectId" value="kurdish-roleplay" />
                   <option name="projectNumber" value="757123888015" />

@@ -34,7 +34,7 @@ Peerapol Unarak
 JavaVM* javaVM;
 
 
-char* g_pszStorage = "/storage/emulated/0/Android/media/com.kurdish.roleplay/";
+char* g_pszStorage = "/storage/emulated/0/Android/media/com.arcoroleplay/";
 
 UI* pUI = nullptr;
 CGame *pGame = nullptr;
@@ -278,19 +278,19 @@ CVector2D radarBgPos1 = {0,0};
 CVector2D radarBgPos2 = {0,0};
 
 extern "C" {
-	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_initializeSAMP(JNIEnv *pEnv, jobject thiz)
+	JNIEXPORT void JNICALL Java_com_arcoroleplay_game_SAMP_initializeSAMP(JNIEnv *pEnv, jobject thiz)
 	{
         pJavaWrapper = new CJavaWrapper(pEnv, thiz);
 
 	}
-	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_onInputEnd(JNIEnv *pEnv, jobject thiz, jbyteArray str)
+	JNIEXPORT void JNICALL Java_com_arcoroleplay_game_SAMP_onInputEnd(JNIEnv *pEnv, jobject thiz, jbyteArray str)
 	{
 		if(pUI)
 		{
 			pUI->keyboard()->sendForGB(pEnv, thiz, str);
 		}
 	}
-	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_onEventBackPressed(JNIEnv *pEnv, jobject thiz)
+	JNIEXPORT void JNICALL Java_com_arcoroleplay_game_SAMP_onEventBackPressed(JNIEnv *pEnv, jobject thiz)
 	{
 		if(pSettings)
 		{
@@ -298,7 +298,7 @@ extern "C" {
 				pJavaWrapper->HideKeyboard();
 		}
 	}
-	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_dialog_DialogManager_sendDialogResponse(JNIEnv* pEnv, jobject thiz, jint i3, jint i, jint i2, jbyteArray str)
+	JNIEXPORT void JNICALL Java_com_arcoroleplay_game_ui_dialog_DialogManager_sendDialogResponse(JNIEnv* pEnv, jobject thiz, jint i3, jint i, jint i2, jbyteArray str)
 	{
 		jboolean isCopy = true;
 
@@ -314,14 +314,14 @@ extern "C" {
 
 		pEnv->ReleaseByteArrayElements(str, pMsg, JNI_ABORT);
 	}
-    /*JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_tab_Tab_show(JNIEnv *pEnv, jobject thiz)
+    /*JNIEXPORT void JNICALL Java_com_arcoroleplay_game_ui_tab_Tab_show(JNIEnv *pEnv, jobject thiz)
     {
         pScoreBoard = new CScoreBoard();
 
     } */
 extern "C"
     JNIEXPORT void JNICALL
-    Java_com_kurdish_roleplay_game_ui_Hud_clickCameraMode(JNIEnv *env, jobject thiz) {
+    Java_com_arcoroleplay_game_ui_Hud_clickCameraMode(JNIEnv *env, jobject thiz) {
         if(!pNetGame)return;
         if(!pNetGame->GetPlayerPool())return;
 
@@ -366,7 +366,7 @@ void InitGui()
 	Plugin::OnPluginLoad();
 	Plugin::OnSampLoad();
 
-	std::string font_path = string_format("/storage/emulated/0/Android/media/com.kurdish.roleplay/SAMP/fonts/%s", FONT_NAME);
+	std::string font_path = string_format("/storage/emulated/0/Android/media/com.arcoroleplay/SAMP/fonts/%s", FONT_NAME);
 	pUI = new UI(ImVec2(RsGlobal->maximumWidth, RsGlobal->maximumHeight), font_path.c_str());
 	pUI->initialize();
 	pUI->performLayout();
@@ -469,7 +469,7 @@ void FLog(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		sprintf(buffer, "/storage/emulated/0/Android/media/com.kurdish.roleplay/samp_log.txt");
+		sprintf(buffer, "/storage/emulated/0/Android/media/com.arcoroleplay/samp_log.txt");
 		//LOGI("buffer: %s", buffer);
 		flLog = fopen(buffer, "a");
 	}
@@ -500,7 +500,7 @@ void ChatLog(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		sprintf(buffer, "/storage/emulated/0/Android/media/com.kurdish.roleplay/chat_log.txt");
+		sprintf(buffer, "/storage/emulated/0/Android/media/com.arcoroleplay/chat_log.txt");
 		flLog = fopen(buffer, "a");
 	}
 
@@ -527,7 +527,7 @@ void MyLog(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		sprintf(buffer, "/storage/emulated/0/Android/media/com.kurdish.roleplay/samp_log.txt");
+		sprintf(buffer, "/storage/emulated/0/Android/media/com.arcoroleplay/samp_log.txt");
 		//LOGI("buffer: %s", buffer);
 		flLog = fopen(buffer, "a");
 	}
@@ -555,7 +555,7 @@ void MyLog2(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		sprintf(buffer, "/storage/emulated/0/Android/media/com.kurdish.roleplay/samp_log.txt");
+		sprintf(buffer, "/storage/emulated/0/Android/media/com.arcoroleplay/samp_log.txt");
 		//LOGI("buffer: %s", buffer);
 		flLog = fopen(buffer, "a");
 	}
@@ -583,7 +583,7 @@ void LogVoice(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		sprintf(buffer, "/storage/emulated/0/Android/media/com.kurdish.roleplay/SAMP/%s", SV::kLogFileName);
+		sprintf(buffer, "/storage/emulated/0/Android/media/com.arcoroleplay/SAMP/%s", SV::kLogFileName);
 		flLog = fopen(buffer, "w");
 	}
 
