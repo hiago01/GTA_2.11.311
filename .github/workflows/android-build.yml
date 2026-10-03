@@ -1,13 +1,8 @@
-name: GTA 2.11.311 - Android Build
+name: GTA 2.11.311 - Android Release
 
 on:
   workflow_dispatch:
-
   push:
-    branches:
-      - XS
-
-  pull_request:
     branches:
       - XS
 
@@ -19,49 +14,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   build:
-    name: Build Android APK
+    name: Build Android Release
     runs-on: ubuntu-24.04
 
     steps:
 
-      # ==========================================================
-      # CHECKOUT
-      # ==========================================================
-
       - name: Checkout repository
-        uses: actions/checkout@v6
-
-
-      # ==========================================================
-      # JAVA 17
-      # ==========================================================
+        uses: actions/checkout@v7
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
           architecture: x64
 
-
-      # ==========================================================
-      # ANDROID SDK
-      # ==========================================================
-
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-
-      # ==========================================================
-      # ANDROID COMPONENTS
-      # ==========================================================
+        uses: android-actions/setup-android@v4
+        with:
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+          packages: ''
 
       - name: Install Android SDK components
         run: |
-          yes | sdkmanager --licenses || true
-
           sdkmanager \
             "platform-tools" \
             "platforms;android-36" \
@@ -69,133 +46,67 @@ jobs:
             "ndk;26.2.11394342" \
             "cmake;3.22.1"
 
-
-      # ==========================================================
-      # ENVIRONMENT
-      # ==========================================================
-
       - name: Configure Android environment
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "JAVA_HOME=$JAVA_HOME"
+
           java -version
 
-          echo "Android SDK:"
+          echo "===== ANDROID SDK ====="
           ls -la "$ANDROID_HOME"
 
-          echo "NDK:"
+          echo "===== NDK ====="
           ls -la "$ANDROID_HOME/ndk"
 
-          echo "CMake:"
+          echo "===== CMAKE ====="
           ls -la "$ANDROID_HOME/cmake"
 
-
-      # ==========================================================
-      # GRADLE
-      # ==========================================================
-
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3
-
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
+      - name: Show Gradle version
+        run: ./gradlew --version
 
-      - name: Show Gradle information
+      - name: Build Release APK
         run: |
-          ./gradlew --version
-
-
-      # ==========================================================
-      # PROJECT INFORMATION
-      # ==========================================================
-
-      - name: Show project structure
-        run: |
-          echo "===== PROJECT ====="
-          pwd
-
-          echo "===== FILES ====="
-          find . -maxdepth 2 -type f \
-            ! -path "./.git/*" \
-            | sort \
-            | head -300
-
-
-      # ==========================================================
-      # GRADLE TASKS
-      # ==========================================================
-
-      - name: Check Gradle tasks
-        run: |
-          ./gradlew tasks --stacktrace
-
-
-      # ==========================================================
-      # DEBUG BUILD
-      # ==========================================================
-
-      - name: Build Debug APK
-        run: |
-          ./gradlew assembleDebug \
+          ./gradlew assembleRelease \
             --stacktrace \
             --no-daemon
 
-
-      # ==========================================================
-      # LIST OUTPUT
-      # ==========================================================
-
-      - name: Find generated APKs
+      - name: Find generated APK
         if: always()
         run: |
-          echo "===== APK FILES ====="
+          echo "===== GENERATED APK ====="
+          find . -type f -name "*.apk" -print
 
-          find . \
-            -type f \
-            -name "*.apk" \
-            -print
+          echo "===== GENERATED AAB ====="
+          find . -type f -name "*.aab" -print
 
-          echo "===== AAB FILES ====="
-
-          find . \
-            -type f \
-            -name "*.aab" \
-            -print
-
-
-      # ==========================================================
-      # UPLOAD DEBUG APK
-      # ==========================================================
-
-      - name: Upload Debug APK
+      - name: Upload Release APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: GTA-2.11.311-debug
+          name: GTA-2.11.311-release
           path: |
             **/build/outputs/apk/**/*.apk
             **/build/outputs/apk/*.apk
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
 
-
-      # ==========================================================
-      # UPLOAD BUILD LOGS
-      # ==========================================================
-
-      - name: Upload build logs
+      - name: Upload build reports
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: GTA-2.11.311-build-logs
+          name: GTA-2.11.311-build-reports
           path: |
-            **/build/outputs/logs/**
             **/build/reports/**
+            **/build/outputs/logs/**
           if-no-files-found: ignore
           retention-days: 7
