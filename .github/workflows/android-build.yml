@@ -1,4 +1,4 @@
-name: GTA 2.11.311 - Android Release
+name: GTA 2.11.311 - Android Debug Test
 
 on:
   workflow_dispatch:
@@ -10,16 +10,15 @@ permissions:
   contents: read
 
 concurrency:
-  group: gta-2.11.311-${{ github.ref }}
+  group: gta-2.11.311-debug-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Build Android Release
+    name: Build Android Debug
     runs-on: ubuntu-24.04
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v7
 
@@ -74,29 +73,72 @@ jobs:
       - name: Show Gradle version
         run: ./gradlew --version
 
-      - name: Build Release APK
+      - name: Clean project
         run: |
-          ./gradlew assembleRelease \
+          echo "===== CLEANING PROJECT ====="
+
+          ./gradlew clean \
             --stacktrace \
             --no-daemon
+
+      - name: Verify clean output
+        run: |
+          echo "===== BUILD DIRECTORIES AFTER CLEAN ====="
+
+          find app/build -maxdepth 3 -type d -print 2>/dev/null || true
+
+          echo "===== OLD APK FILES ====="
+
+          find . \
+            -type f \
+            -name "*.apk" \
+            -print 2>/dev/null || true
+
+      - name: Build Debug APK
+        run: |
+          echo "===== BUILDING DEBUG APK ====="
+
+          ./gradlew assembleDebug \
+            --stacktrace \
+            --no-daemon \
+            --info
 
       - name: Find generated APK
         if: always()
         run: |
-          echo "===== GENERATED APK ====="
-          find . -type f -name "*.apk" -print
+          echo "========================================"
+          echo "          GENERATED DEBUG APK"
+          echo "========================================"
 
-          echo "===== GENERATED AAB ====="
-          find . -type f -name "*.aab" -print
+          find . \
+            -type f \
+            -name "*.apk" \
+            -print
 
-      - name: Upload Release APK
+          echo ""
+          echo "========================================"
+          echo "          GENERATED AAB"
+          echo "========================================"
+
+          find . \
+            -type f \
+            -name "*.aab" \
+            -print
+
+          echo ""
+          echo "========================================"
+          echo "          APK DIRECTORY"
+          echo "========================================"
+
+          ls -lah app/build/outputs/apk/debug/ 2>/dev/null || true
+
+      - name: Upload Debug APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: GTA-2.11.311-release
+          name: GTA-2.11.311-debug
           path: |
-            **/build/outputs/apk/**/*.apk
-            **/build/outputs/apk/*.apk
+            app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -104,9 +146,9 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: GTA-2.11.311-build-reports
+          name: GTA-2.11.311-debug-build-reports
           path: |
-            **/build/reports/**
-            **/build/outputs/logs/**
+            app/build/reports/**
+            app/build/outputs/logs/**
           if-no-files-found: ignore
           retention-days: 7
