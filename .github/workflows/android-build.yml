@@ -2,6 +2,7 @@ name: GTA 2.11.311 - Android Release
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - teste-original
@@ -19,14 +20,59 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      # ============================================================
+      # CHECKOUT
+      # ============================================================
 
-      - name: Remove app release and debug folders
+      - name: Checkout teste-original
+        uses: actions/checkout@v7
+        with:
+          ref: teste-original
+          fetch-depth: 1
+
+      # ============================================================
+      # SHOW BRANCH / COMMIT
+      # ============================================================
+
+      - name: Verify branch and commit
+        run: |
+          echo "========================================"
+          echo "       REPOSITORY INFORMATION"
+          echo "========================================"
+
+          echo "Git branch:"
+          git branch --show-current
+
+          echo ""
+          echo "Git commit:"
+          git rev-parse --short HEAD
+
+          echo ""
+          echo "Git remote:"
+          git remote -v
+
+          echo ""
+
+          if [ "$(git branch --show-current)" != "teste-original" ]; then
+            echo "ERROR: Workflow não está usando teste-original."
+            exit 1
+          fi
+
+          echo "OK: branch teste-original confirmada."
+
+      # ============================================================
+      # REMOVE ONLY OLD BUILD OUTPUTS
+      # ============================================================
+
+      - name: Remove old app release and debug folders
         run: |
           echo "========================================"
           echo "       REMOVING OLD APP FOLDERS"
           echo "========================================"
+
+          # IMPORTANTE:
+          # Não removemos app/keystore.
+          # Somente removemos os diretórios de APK antigos.
 
           rm -rf app/release/
           rm -rf app/debug/
@@ -46,12 +92,33 @@ jobs:
             echo "OK: app/debug/ foi removida."
           fi
 
+          echo ""
+          echo "===== KEYSTORE CHECK ====="
+
+          if [ -d "app/keystore" ]; then
+            echo "OK: app/keystore/ existe."
+            find app/keystore \
+              -maxdepth 2 \
+              -type f \
+              -print
+          else
+            echo "WARNING: app/keystore/ não existe."
+          fi
+
+      # ============================================================
+      # JAVA 17
+      # ============================================================
+
       - name: Setup JDK 17
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
           architecture: x64
+
+      # ============================================================
+      # ANDROID SDK
+      # ============================================================
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
@@ -60,8 +127,16 @@ jobs:
           log-accepted-android-sdk-licenses: false
           packages: ''
 
+      # ============================================================
+      # SDK / NDK / CMAKE
+      # ============================================================
+
       - name: Install Android SDK components
         run: |
+          echo "========================================"
+          echo "       INSTALLING ANDROID COMPONENTS"
+          echo "========================================"
+
           sdkmanager \
             "platform-tools" \
             "platforms;android-36" \
@@ -69,36 +144,221 @@ jobs:
             "ndk;26.2.11394342" \
             "cmake;3.22.1"
 
+      # ============================================================
+      # ANDROID ENVIRONMENT
+      # ============================================================
+
       - name: Configure Android environment
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-          echo "===== ENVIRONMENT ====="
+          echo "========================================"
+          echo "          ANDROID ENVIRONMENT"
+          echo "========================================"
+
           echo "ANDROID_HOME=$ANDROID_HOME"
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "JAVA_HOME=$JAVA_HOME"
 
+          echo ""
           echo "===== JAVA ====="
           java -version
 
-          echo "===== ANDROID SDK ====="
+          echo ""
+          echo "===== SDK ====="
           ls -la "$ANDROID_HOME"
 
+          echo ""
           echo "===== NDK ====="
           ls -la "$ANDROID_HOME/ndk"
 
+          echo ""
           echo "===== CMAKE ====="
           ls -la "$ANDROID_HOME/cmake"
+
+      # ============================================================
+      # GRADLE
+      # ============================================================
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Make Gradle executable
-        run: chmod +x ./gradlew
+        run: |
+          chmod +x ./gradlew
 
       - name: Show Gradle version
         run: |
+          echo "========================================"
+          echo "          GRADLE VERSION"
+          echo "========================================"
+
           ./gradlew --version --daemon
+
+      # ============================================================
+      # PROJECT INFORMATION
+      # ============================================================
+
+      - name: Inspect Android project
+        run: |
+          echo "========================================"
+          echo "          PROJECT INFORMATION"
+          echo "========================================"
+
+          echo ""
+          echo "===== SETTINGS ====="
+          sed -n '1,160p' settings.gradle 2>/dev/null || true
+
+          echo ""
+          echo "===== APP BUILD GRADLE ====="
+          sed -n '1,260p' app/build.gradle 2>/dev/null || true
+
+          echo ""
+          echo "===== KEYSTORE FILES ====="
+
+          find . \
+            -type f \
+            \( \
+              -name "*.jks" \
+              -o \
+              -name "*.keystore" \
+              -o \
+              -name "*.JKS" \
+              -o \
+              -name "*.KEYSTORE" \
+            \) \
+            -not -path "./.git/*" \
+            -print
+
+      # ============================================================
+      # FIND RELEASE KEYSTORE
+      # ============================================================
+
+      - name: Locate release keystore
+        run: |
+          echo "========================================"
+          echo "          RELEASE KEYSTORE"
+          echo "========================================"
+
+          EXPECTED_KEYSTORE="app/keystore/gta-release.jks"
+
+          echo "Expected path:"
+          echo "$EXPECTED_KEYSTORE"
+
+          echo ""
+
+          # Primeiro tenta o caminho original.
+          if [ -f "$EXPECTED_KEYSTORE" ]; then
+            echo "OK: keystore encontrada no caminho original:"
+            echo "$EXPECTED_KEYSTORE"
+
+            echo "KEYSTORE_PATH=$EXPECTED_KEYSTORE" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "Keystore não encontrada no caminho original."
+          echo ""
+          echo "Procurando outros arquivos de assinatura..."
+
+          FOUND_KEYSTORE=""
+
+          while IFS= read -r file; do
+            if [ -z "$FOUND_KEYSTORE" ]; then
+              FOUND_KEYSTORE="$file"
+            fi
+
+            echo "Encontrado:"
+            echo "$file"
+          done < <(
+            find . \
+              -type f \
+              \( \
+                -name "*.jks" \
+                -o \
+                -name "*.keystore" \
+                -o \
+                -name "*.JKS" \
+                -o \
+                -name "*.KEYSTORE" \
+              \) \
+              -not -path "./.git/*" \
+              -print
+          )
+
+          if [ -z "$FOUND_KEYSTORE" ]; then
+            echo ""
+            echo "ERROR: Nenhum keystore foi encontrado no checkout."
+            echo ""
+            echo "O build Release precisa do keystore usado pelo projeto."
+            echo ""
+            echo "Arquivos app/:"
+            find app -maxdepth 4 -type f | sort | head -300 || true
+            exit 1
+          fi
+
+          echo ""
+          echo "Usando keystore encontrada:"
+          echo "$FOUND_KEYSTORE"
+
+          echo "KEYSTORE_PATH=$FOUND_KEYSTORE" >> "$GITHUB_ENV"
+
+      # ============================================================
+      # VERIFY RELEASE KEYSTORE
+      # ============================================================
+
+      - name: Verify release keystore
+        run: |
+          echo "========================================"
+          echo "       VERIFYING RELEASE KEYSTORE"
+          echo "========================================"
+
+          if [ -z "$KEYSTORE_PATH" ]; then
+            echo "ERROR: KEYSTORE_PATH não foi definido."
+            exit 1
+          fi
+
+          if [ ! -f "$KEYSTORE_PATH" ]; then
+            echo "ERROR: Keystore não encontrada:"
+            echo "$KEYSTORE_PATH"
+            exit 1
+          fi
+
+          echo "Keystore:"
+          echo "$KEYSTORE_PATH"
+
+          echo ""
+          echo "Arquivo:"
+          ls -lh "$KEYSTORE_PATH"
+
+          echo ""
+          echo "===== KEYTOOL ====="
+
+          keytool -list \
+            -keystore "$KEYSTORE_PATH" \
+            -storepass hiago123
+
+      # ============================================================
+      # BASELINE PROFILE
+      # ============================================================
+
+      - name: Check duplicate baseline profiles
+        run: |
+          echo "========================================"
+          echo "          BASELINE PROFILE CHECK"
+          echo "========================================"
+
+          find app/src/main/assets \
+            -type f \
+            \( \
+              -name "baseline.prof" \
+              -o \
+              -name "baseline.profm" \
+            \) \
+            -print 2>/dev/null || true
+
+      # ============================================================
+      # CLEAN
+      # ============================================================
 
       - name: Clean project
         run: |
@@ -111,6 +371,10 @@ jobs:
             --daemon \
             --info
 
+      # ============================================================
+      # VERIFY CLEAN
+      # ============================================================
+
       - name: Verify folders after Gradle clean
         run: |
           echo "========================================"
@@ -118,39 +382,31 @@ jobs:
           echo "========================================"
 
           if [ -d "app/release" ]; then
-            echo "app/release/ exists."
+            echo "WARNING: app/release/ exists."
           else
-            echo "app/release/ does not exist."
+            echo "OK: app/release/ does not exist."
           fi
 
           if [ -d "app/debug" ]; then
-            echo "app/debug/ exists."
+            echo "WARNING: app/debug/ exists."
           else
-            echo "app/debug/ does not exist."
+            echo "OK: app/debug/ does not exist."
           fi
 
-      - name: Verify release keystore
-        run: |
-          echo "========================================"
-          echo "          RELEASE KEYSTORE"
-          echo "========================================"
+          echo ""
+          echo "===== KEYSTORE AFTER CLEAN ====="
 
-          ls -lh app/keystore/gta-release.jks
+          if [ -n "$KEYSTORE_PATH" ] && [ -f "$KEYSTORE_PATH" ]; then
+            echo "OK: keystore continua presente:"
+            ls -lh "$KEYSTORE_PATH"
+          else
+            echo "ERROR: keystore desapareceu após Gradle clean."
+            exit 1
+          fi
 
-          keytool -list \
-            -keystore app/keystore/gta-release.jks \
-            -storepass hiago123
-
-      - name: Check duplicate baseline profiles
-        run: |
-          echo "========================================"
-          echo "          BASELINE PROFILE CHECK"
-          echo "========================================"
-
-          find app/src/main/assets \
-            -type f \
-            \( -name "baseline.prof" -o -name "baseline.profm" \) \
-            -print 2>/dev/null || true
+      # ============================================================
+      # BUILD RELEASE
+      # ============================================================
 
       - name: Build Release APK
         run: |
@@ -162,6 +418,10 @@ jobs:
             --stacktrace \
             --daemon \
             --info
+
+      # ============================================================
+      # CHECK OUTPUTS
+      # ============================================================
 
       - name: Check newly created app folders
         if: always()
@@ -198,6 +458,10 @@ jobs:
             echo "app/debug/ was NOT created."
           fi
 
+      # ============================================================
+      # VERIFY APK
+      # ============================================================
+
       - name: Verify APK signature
         if: success()
         run: |
@@ -213,13 +477,26 @@ jobs:
             exit 1
           fi
 
-          echo "APK: $APK"
+          echo "APK:"
+          echo "$APK"
+
+          echo ""
+          echo "===== APK SIZE ====="
+
+          ls -lh "$APK"
+
+          echo ""
+          echo "===== APK SIGNATURE ====="
 
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify \
             --verbose \
             "$APK"
 
-      - name: Find generated APK
+      # ============================================================
+      # FIND GENERATED FILES
+      # ============================================================
+
+      - name: Find generated APK and AAB
         if: always()
         run: |
           echo "========================================"
@@ -229,6 +506,7 @@ jobs:
           find . \
             -type f \
             -name "*.apk" \
+            -not -path "./.git/*" \
             -print
 
           echo ""
@@ -239,6 +517,7 @@ jobs:
           find . \
             -type f \
             -name "*.aab" \
+            -not -path "./.git/*" \
             -print
 
           echo ""
@@ -246,21 +525,31 @@ jobs:
           echo "          GRADLE RELEASE OUTPUT"
           echo "========================================"
 
-          ls -lah app/build/outputs/apk/release/ 2>/dev/null || true
+          ls -lah \
+            app/build/outputs/apk/release/ \
+            2>/dev/null || true
 
           echo ""
           echo "========================================"
           echo "          APP/RELEASE OUTPUT"
           echo "========================================"
 
-          ls -lah app/release/ 2>/dev/null || true
+          ls -lah \
+            app/release/ \
+            2>/dev/null || true
 
           echo ""
           echo "========================================"
           echo "          APP/DEBUG OUTPUT"
           echo "========================================"
 
-          ls -lah app/debug/ 2>/dev/null || true
+          ls -lah \
+            app/debug/ \
+            2>/dev/null || true
+
+      # ============================================================
+      # UPLOAD RELEASE APK
+      # ============================================================
 
       - name: Upload Release APK
         if: success()
@@ -272,6 +561,10 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      # ============================================================
+      # UPLOAD APP RELEASE
+      # ============================================================
+
       - name: Upload app/release APK if created
         if: always()
         uses: actions/upload-artifact@v4
@@ -282,6 +575,10 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      # ============================================================
+      # UPLOAD APP DEBUG
+      # ============================================================
+
       - name: Upload app/debug APK if created
         if: always()
         uses: actions/upload-artifact@v4
@@ -291,6 +588,10 @@ jobs:
             app/debug/*.apk
           if-no-files-found: ignore
           retention-days: 30
+
+      # ============================================================
+      # UPLOAD BUILD REPORTS
+      # ============================================================
 
       - name: Upload build reports
         if: failure()
