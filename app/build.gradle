@@ -4,6 +4,13 @@ plugins {
     id 'com.google.firebase.crashlytics'
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     compileSdk 36
 
@@ -60,6 +67,15 @@ android {
         }
     }
 
+signingConfigs {
+    release {
+        storeFile file("keystore/gta-release.jks")
+        storePassword keystoreProperties['storePassword'] ?: System.getenv("KEYSTORE_PASSWORD")
+        keyAlias keystoreProperties['keyAlias'] ?: "gta-release"
+        keyPassword keystoreProperties['keyPassword'] ?: System.getenv("KEY_PASSWORD")
+    }
+}
+
     buildTypes {
         debug {
             debuggable true
@@ -72,7 +88,10 @@ android {
             }
         }
         release {
-            firebaseCrashlytics {
+ 
+signingConfig signingConfigs.release
+
+           firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
                 strippedNativeLibsDir 'build/intermediates/stripped_native_libs/release/out/lib'
                 unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/out/lib'
