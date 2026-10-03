@@ -60,6 +60,16 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            signingConfig signingConfigs.release
+            storeFile file("keystore/gta-release.jks")
+            storePassword "hiago123"
+            keyAlias "gta-release"
+            keyPassword "hiago123"
+        }
+    }
+
     buildTypes {
         debug {
             debuggable true
