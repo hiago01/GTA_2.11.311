@@ -4,7 +4,7 @@
 #include "net/netgame.h"
 #include "net/localplayer.h"
 #include "net/netgame.h"
-#include "playertablist.h"
+#include "playerTabList.h"
 #include "scoreboard.h"
 #include "net/localplayer.h"
 
