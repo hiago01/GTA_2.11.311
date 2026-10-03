@@ -5,7 +5,7 @@
 
 -keep class com.wardrumstudios.utils.* { *; }
 
--keep class com.kurdish.roleplay.game.* { *; }
+-keep class com.arcoroleplay.game.* { *; }
 
 -dontwarn javax.servlet.**
 -dontwarn org.conscrypt.**

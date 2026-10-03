@@ -5,11 +5,11 @@ on:
 
   push:
     branches:
-      - XS
+      - teste-original
 
   pull_request:
     branches:
-      - XS
+      - teste-original
 
 permissions:
   contents: read
