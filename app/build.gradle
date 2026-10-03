@@ -62,7 +62,6 @@ android {
 
     signingConfigs {
         release {
-            signingConfig signingConfigs.release
             storeFile file("keystore/gta-release.jks")
             storePassword "hiago123"
             keyAlias "gta-release"
@@ -82,6 +81,7 @@ android {
             }
         }
         release {
+            signingConfig signingConfigs.release
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
                 strippedNativeLibsDir 'build/intermediates/stripped_native_libs/release/out/lib'
