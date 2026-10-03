@@ -5,7 +5,7 @@
 #pragma once
 
 #include "common.h"
-#include "rgba.h"
+#include "RGBA.h"
 
 
 enum eCoronaType {

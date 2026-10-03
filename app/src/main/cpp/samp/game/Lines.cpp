@@ -4,7 +4,7 @@
 
 #include "Lines.h"
 #include "../vendor/armhook/patch.h"
-#include "rgba.h"
+#include "RGBA.h"
 
 void CLines::RenderLineNoClipping(float startX, float startY, float startZ, float endX, float endY, float endZ, uint32 startColor, uint32 endColor) {
     RxObjSpace3DVertex vertices[] = {

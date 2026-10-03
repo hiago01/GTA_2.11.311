@@ -3,7 +3,7 @@
 #include "game/Lines.h"
 #include "Matrix.h"
 #include "Vector.h"
-#include "../rgba.h"
+#include "../RGBA.h"
 
 // 0x40FCF0
 void CSphere::Set(float radius, const CVector& center) {

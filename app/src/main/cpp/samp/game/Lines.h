@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "rgba.h"
+#include "RGBA.h"
 
 class CLines {
 public:

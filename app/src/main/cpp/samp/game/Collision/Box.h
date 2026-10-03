@@ -7,7 +7,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../rgba.h"
+#include "../RGBA.h"
 #include "../Core/Matrix.h"
 
 class CBox {

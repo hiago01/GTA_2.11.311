@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "rgba.h"
+#include "RGBA.h"
 #include "Core/Rect.h"
 
 class CSprite2d

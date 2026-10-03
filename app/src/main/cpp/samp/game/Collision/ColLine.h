@@ -7,7 +7,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../rgba.h"
+#include "../RGBA.h"
 #include "../Core/Vector2D.h"
 #include "Matrix.h"
 #include "Vector.h"

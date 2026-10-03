@@ -8,7 +8,7 @@
 
 #include "common.h"
 #include "game/Core/RQVector.h"
-#include "rgba.h"
+#include "RGBA.h"
 
 class CColourSet {
 public:

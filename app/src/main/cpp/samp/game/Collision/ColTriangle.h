@@ -12,7 +12,7 @@
 #include "game/Core/Rect.h"
 #include "game/StoredCollPoly.h"
 #include "ColTrianglePlane.h"
-#include "../rgba.h"
+#include "../RGBA.h"
 
 class CColTriangle {
 public:
