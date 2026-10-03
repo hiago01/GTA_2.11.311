@@ -20,80 +20,23 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+
       # ============================================================
       # CHECKOUT
       # ============================================================
 
-      - name: Checkout teste-original
-        uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           ref: teste-original
           fetch-depth: 1
-
-      # ============================================================
-      # SHOW BRANCH / COMMIT
-      # ============================================================
-
-      - name: Verify branch and commit
-        run: |
-          echo "========================================"
-          echo "       REPOSITORY INFORMATION"
-          echo "========================================"
-
-          echo "Git branch:"
-          git branch --show-current
-
-          echo ""
-          echo "Git commit:"
-          git rev-parse --short HEAD
-
-          echo ""
-          echo "Git remote:"
-          git remote -v
-
-          echo ""
-
-          if [ "$(git branch --show-current)" != "teste-original" ]; then
-            echo "ERROR: Workflow não está usando teste-original."
-            exit 1
-          fi
-
-          echo "OK: branch teste-original confirmada."
-
-      # ============================================================
-      # REMOVE ONLY OLD BUILD OUTPUTS
-      # ============================================================
-
-      - name: Remove old app release and debug folders
-        run: |
-          echo "========================================"
-          echo "       REMOVING OLD APP FOLDERS"
-          echo "========================================"
-
-          rm -rf app/release/
-          rm -rf app/debug/
-
-          echo ""
-          echo "===== CHECK AFTER REMOVAL ====="
-
-          if [ -d "app/release" ]; then
-            echo "WARNING: app/release/ ainda existe."
-          else
-            echo "OK: app/release/ foi removida."
-          fi
-
-          if [ -d "app/debug" ]; then
-            echo "WARNING: app/debug/ ainda existe."
-          else
-            echo "OK: app/debug/ foi removida."
-          fi
 
       # ============================================================
       # JAVA 17
       # ============================================================
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
@@ -104,22 +47,14 @@ jobs:
       # ============================================================
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          accept-android-sdk-licenses: true
-          log-accepted-android-sdk-licenses: false
-          packages: ''
+        uses: android-actions/setup-android@v3
 
       # ============================================================
-      # SDK / NDK / CMAKE
+      # ANDROID SDK / NDK / CMAKE
       # ============================================================
 
-      - name: Install Android SDK components
+      - name: Install Android components
         run: |
-          echo "========================================"
-          echo "       INSTALLING ANDROID COMPONENTS"
-          echo "========================================"
-
           sdkmanager \
             "platform-tools" \
             "platforms;android-36" \
@@ -135,30 +70,6 @@ jobs:
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-          echo "========================================"
-          echo "          ANDROID ENVIRONMENT"
-          echo "========================================"
-
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          echo "JAVA_HOME=$JAVA_HOME"
-
-          echo ""
-          echo "===== JAVA ====="
-          java -version
-
-          echo ""
-          echo "===== SDK ====="
-          ls -la "$ANDROID_HOME"
-
-          echo ""
-          echo "===== NDK ====="
-          ls -la "$ANDROID_HOME/ndk"
-
-          echo ""
-          echo "===== CMAKE ====="
-          ls -la "$ANDROID_HOME/cmake"
-
       # ============================================================
       # GRADLE
       # ============================================================
@@ -170,104 +81,13 @@ jobs:
         run: |
           chmod +x ./gradlew
 
-      - name: Show Gradle version
-        run: |
-          echo "========================================"
-          echo "          GRADLE VERSION"
-          echo "========================================"
-
-          ./gradlew --version --daemon
-
-      # ============================================================
-      # PROJECT INFORMATION
-      # ============================================================
-
-      - name: Inspect Android project
-        run: |
-          echo "========================================"
-          echo "          PROJECT INFORMATION"
-          echo "========================================"
-
-          echo ""
-          echo "===== SETTINGS ====="
-          sed -n '1,160p' settings.gradle 2>/dev/null || true
-
-          echo ""
-          echo "===== APP BUILD GRADLE ====="
-          sed -n '1,260p' app/build.gradle 2>/dev/null || true
-
-          echo ""
-          echo "===== SIGNING FILES ====="
-
-          find . \
-            -type f \
-            \
-              -name "*.jks" \
-              -o \
-              -name "*.keystore" \
-              -o \
-              -name "*.JKS" \
-              -o \
-              -name "*.KEYSTORE" \
-            \
-            -not -path "./.git/*" \
-            -print || true
-
-      # ============================================================
-      # BASELINE PROFILE
-      # ============================================================
-
-      - name: Check duplicate baseline profiles
-        run: |
-          echo "========================================"
-          echo "          BASELINE PROFILE CHECK"
-          echo "========================================"
-
-          find app/src/main/assets \
-            -type f \
-            \
-              -name "baseline.prof" \
-              -o \
-              -name "baseline.profm" \
-            \
-            -print 2>/dev/null || true
-
       # ============================================================
       # CLEAN
       # ============================================================
 
-      - name: Clean project
+      - name: Clean
         run: |
-          echo "========================================"
-          echo "          CLEANING PROJECT"
-          echo "========================================"
-
-          ./gradlew clean \
-            --stacktrace \
-            --daemon \
-            --info
-
-      # ============================================================
-      # VERIFY CLEAN
-      # ============================================================
-
-      - name: Verify folders after Gradle clean
-        run: |
-          echo "========================================"
-          echo "       FOLDERS AFTER GRADLE CLEAN"
-          echo "========================================"
-
-          if [ -d "app/release" ]; then
-            echo "WARNING: app/release/ exists."
-          else
-            echo "OK: app/release/ does not exist."
-          fi
-
-          if [ -d "app/debug" ]; then
-            echo "WARNING: app/debug/ exists."
-          else
-            echo "OK: app/debug/ does not exist."
-          fi
+          ./gradlew clean --stacktrace
 
       # ============================================================
       # BUILD RELEASE
@@ -275,97 +95,16 @@ jobs:
 
       - name: Build Release APK
         run: |
-          echo "========================================"
-          echo "          BUILDING RELEASE APK"
-          echo "========================================"
-
-          ./gradlew assembleRelease \
-            --stacktrace \
-            --daemon \
-            --info
+          ./gradlew assembleRelease --stacktrace
 
       # ============================================================
-      # CHECK OUTPUTS
+      # FIND APK
       # ============================================================
 
-      - name: Check newly created app folders
-        if: always()
+      - name: Find generated APK
         run: |
           echo "========================================"
-          echo "       CHECKING CREATED APP FOLDERS"
-          echo "========================================"
-
-          echo ""
-          echo "===== app/release ====="
-
-          if [ -d "app/release" ]; then
-            echo "NEW app/release/ CREATED"
-
-            find app/release \
-              -maxdepth 2 \
-              -type f \
-              -print
-          else
-            echo "app/release/ was NOT created."
-          fi
-
-          echo ""
-          echo "===== app/debug ====="
-
-          if [ -d "app/debug" ]; then
-            echo "NEW app/debug/ CREATED"
-
-            find app/debug \
-              -maxdepth 2 \
-              -type f \
-              -print
-          else
-            echo "app/debug/ was NOT created."
-          fi
-
-      # ============================================================
-      # VERIFY APK
-      # ============================================================
-
-      - name: Verify APK signature
-        if: success()
-        run: |
-          echo "========================================"
-          echo "          VERIFYING APK SIGNATURE"
-          echo "========================================"
-
-          APK="app/build/outputs/apk/release/app-release.apk"
-
-          if [ ! -f "$APK" ]; then
-            echo "ERROR: Release APK não encontrado:"
-            echo "$APK"
-            exit 1
-          fi
-
-          echo "APK:"
-          echo "$APK"
-
-          echo ""
-          echo "===== APK SIZE ====="
-
-          ls -lh "$APK"
-
-          echo ""
-          echo "===== APK SIGNATURE ====="
-
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify \
-            --verbose \
-            "$APK"
-
-      # ============================================================
-      # FIND GENERATED FILES
-      # ============================================================
-
-      - name: Find generated APK and AAB
-        if: always()
-        run: |
-          echo "========================================"
-          echo "          GENERATED APK FILES"
+          echo "          SEARCHING FOR APK"
           echo "========================================"
 
           find . \
@@ -374,17 +113,41 @@ jobs:
             -not -path "./.git/*" \
             -print
 
-          echo ""
-          echo "========================================"
-          echo "          GENERATED AAB"
-          echo "========================================"
+      # ============================================================
+      # PREPARE APK FOR UPLOAD
+      # ============================================================
 
-          find . \
+      - name: Prepare APK
+        run: |
+          mkdir -p artifact
+
+          APK=$(find app/build/outputs/apk/release \
             -type f \
-            -name "*.aab" \
-            -not -path "./.git/*" \
-            -print
+            -name "*.apk" \
+            | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "ERRO: Nenhum APK foi encontrado."
+            exit 1
+          fi
+
+          echo "APK encontrado:"
+          echo "$APK"
+
+          cp "$APK" artifact/GTA-2.11.311-release.apk
 
           echo ""
-          echo "========================================"
-         
+          echo "APK preparado:"
+          ls -lh artifact/GTA-2.11.311-release.apk
+
+      # ============================================================
+      # UPLOAD APK
+      # ============================================================
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GTA-2.11.311-release
+          path: artifact/GTA-2.11.311-release.apk
+          if-no-files-found: error
+          retention-days: 7
