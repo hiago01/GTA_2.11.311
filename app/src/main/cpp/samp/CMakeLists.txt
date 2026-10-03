@@ -3,10 +3,7 @@ project(samp)
 
 set(CMAKE_CXX_STANDARD 20)
 
-if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
-    add_definitions(-DVER_x32=true)
-    set(GLOSSHOOK_ABI "ARM")
-elseif(${ANDROID_ABI} STREQUAL "arm64-v8a")
+if(${ANDROID_ABI} STREQUAL "arm64-v8a")
     add_definitions(-DVER_x32=false)
     set(GLOSSHOOK_ABI "ARM64")
 endif()
