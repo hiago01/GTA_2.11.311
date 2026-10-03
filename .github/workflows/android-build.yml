@@ -70,10 +70,6 @@ jobs:
           echo "       REMOVING OLD APP FOLDERS"
           echo "========================================"
 
-          # IMPORTANTE:
-          # Não removemos app/keystore.
-          # Somente removemos os diretórios de APK antigos.
-
           rm -rf app/release/
           rm -rf app/debug/
 
@@ -90,19 +86,6 @@ jobs:
             echo "WARNING: app/debug/ ainda existe."
           else
             echo "OK: app/debug/ foi removida."
-          fi
-
-          echo ""
-          echo "===== KEYSTORE CHECK ====="
-
-          if [ -d "app/keystore" ]; then
-            echo "OK: app/keystore/ existe."
-            find app/keystore \
-              -maxdepth 2 \
-              -type f \
-              -print
-          else
-            echo "WARNING: app/keystore/ não existe."
           fi
 
       # ============================================================
@@ -214,11 +197,11 @@ jobs:
           sed -n '1,260p' app/build.gradle 2>/dev/null || true
 
           echo ""
-          echo "===== KEYSTORE FILES ====="
+          echo "===== SIGNING FILES ====="
 
           find . \
             -type f \
-            \( \
+            \
               -name "*.jks" \
               -o \
               -name "*.keystore" \
@@ -226,116 +209,9 @@ jobs:
               -name "*.JKS" \
               -o \
               -name "*.KEYSTORE" \
-            \) \
+            \
             -not -path "./.git/*" \
-            -print
-
-      # ============================================================
-      # FIND RELEASE KEYSTORE
-      # ============================================================
-
-      - name: Locate release keystore
-        run: |
-          echo "========================================"
-          echo "          RELEASE KEYSTORE"
-          echo "========================================"
-
-          EXPECTED_KEYSTORE="app/keystore/gta-release.jks"
-
-          echo "Expected path:"
-          echo "$EXPECTED_KEYSTORE"
-
-          echo ""
-
-          # Primeiro tenta o caminho original.
-          if [ -f "$EXPECTED_KEYSTORE" ]; then
-            echo "OK: keystore encontrada no caminho original:"
-            echo "$EXPECTED_KEYSTORE"
-
-            echo "KEYSTORE_PATH=$EXPECTED_KEYSTORE" >> "$GITHUB_ENV"
-            exit 0
-          fi
-
-          echo "Keystore não encontrada no caminho original."
-          echo ""
-          echo "Procurando outros arquivos de assinatura..."
-
-          FOUND_KEYSTORE=""
-
-          while IFS= read -r file; do
-            if [ -z "$FOUND_KEYSTORE" ]; then
-              FOUND_KEYSTORE="$file"
-            fi
-
-            echo "Encontrado:"
-            echo "$file"
-          done < <(
-            find . \
-              -type f \
-              \( \
-                -name "*.jks" \
-                -o \
-                -name "*.keystore" \
-                -o \
-                -name "*.JKS" \
-                -o \
-                -name "*.KEYSTORE" \
-              \) \
-              -not -path "./.git/*" \
-              -print
-          )
-
-          if [ -z "$FOUND_KEYSTORE" ]; then
-            echo ""
-            echo "ERROR: Nenhum keystore foi encontrado no checkout."
-            echo ""
-            echo "O build Release precisa do keystore usado pelo projeto."
-            echo ""
-            echo "Arquivos app/:"
-            find app -maxdepth 4 -type f | sort | head -300 || true
-            exit 1
-          fi
-
-          echo ""
-          echo "Usando keystore encontrada:"
-          echo "$FOUND_KEYSTORE"
-
-          echo "KEYSTORE_PATH=$FOUND_KEYSTORE" >> "$GITHUB_ENV"
-
-      # ============================================================
-      # VERIFY RELEASE KEYSTORE
-      # ============================================================
-
-      - name: Verify release keystore
-        run: |
-          echo "========================================"
-          echo "       VERIFYING RELEASE KEYSTORE"
-          echo "========================================"
-
-          if [ -z "$KEYSTORE_PATH" ]; then
-            echo "ERROR: KEYSTORE_PATH não foi definido."
-            exit 1
-          fi
-
-          if [ ! -f "$KEYSTORE_PATH" ]; then
-            echo "ERROR: Keystore não encontrada:"
-            echo "$KEYSTORE_PATH"
-            exit 1
-          fi
-
-          echo "Keystore:"
-          echo "$KEYSTORE_PATH"
-
-          echo ""
-          echo "Arquivo:"
-          ls -lh "$KEYSTORE_PATH"
-
-          echo ""
-          echo "===== KEYTOOL ====="
-
-          keytool -list \
-            -keystore "$KEYSTORE_PATH" \
-            -storepass hiago123
+            -print || true
 
       # ============================================================
       # BASELINE PROFILE
@@ -349,11 +225,11 @@ jobs:
 
           find app/src/main/assets \
             -type f \
-            \( \
+            \
               -name "baseline.prof" \
               -o \
               -name "baseline.profm" \
-            \) \
+            \
             -print 2>/dev/null || true
 
       # ============================================================
@@ -391,17 +267,6 @@ jobs:
             echo "WARNING: app/debug/ exists."
           else
             echo "OK: app/debug/ does not exist."
-          fi
-
-          echo ""
-          echo "===== KEYSTORE AFTER CLEAN ====="
-
-          if [ -n "$KEYSTORE_PATH" ] && [ -f "$KEYSTORE_PATH" ]; then
-            echo "OK: keystore continua presente:"
-            ls -lh "$KEYSTORE_PATH"
-          else
-            echo "ERROR: keystore desapareceu após Gradle clean."
-            exit 1
           fi
 
       # ============================================================
@@ -522,84 +387,4 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "          GRADLE RELEASE OUTPUT"
-          echo "========================================"
-
-          ls -lah \
-            app/build/outputs/apk/release/ \
-            2>/dev/null || true
-
-          echo ""
-          echo "========================================"
-          echo "          APP/RELEASE OUTPUT"
-          echo "========================================"
-
-          ls -lah \
-            app/release/ \
-            2>/dev/null || true
-
-          echo ""
-          echo "========================================"
-          echo "          APP/DEBUG OUTPUT"
-          echo "========================================"
-
-          ls -lah \
-            app/debug/ \
-            2>/dev/null || true
-
-      # ============================================================
-      # UPLOAD RELEASE APK
-      # ============================================================
-
-      - name: Upload Release APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: GTA-2.11.311-release
-          path: |
-            app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
-          retention-days: 30
-
-      # ============================================================
-      # UPLOAD APP RELEASE
-      # ============================================================
-
-      - name: Upload app/release APK if created
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: GTA-2.11.311-app-release
-          path: |
-            app/release/*.apk
-          if-no-files-found: ignore
-          retention-days: 30
-
-      # ============================================================
-      # UPLOAD APP DEBUG
-      # ============================================================
-
-      - name: Upload app/debug APK if created
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: GTA-2.11.311-app-debug
-          path: |
-            app/debug/*.apk
-          if-no-files-found: ignore
-          retention-days: 30
-
-      # ============================================================
-      # UPLOAD BUILD REPORTS
-      # ============================================================
-
-      - name: Upload build reports
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: GTA-2.11.311-release-build-reports
-          path: |
-            app/build/reports/**
-            app/build/outputs/logs/**
-          if-no-files-found: ignore
-          retention-days: 7
+         
