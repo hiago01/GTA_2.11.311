@@ -43,62 +43,133 @@ public class HomeFragment extends Fragment {
         View webBtn = view.findViewById(R.id.webBtn);
         View youtubeBtn = view.findViewById(R.id.youtubeBtn);
 
+        // ============================================================
+        // VERIFICAÇÃO DOS BOTÕES
+        // ============================================================
+
         if (btnPlay == null) {
-            Log.e(TAG, "ERRO: btnPlay não encontrado em fragment_home.xml");
+            Log.e(
+                    TAG,
+                    "ERRO: btnPlay não encontrado em fragment_home.xml"
+            );
         }
 
         if (discordBtn == null) {
-            Log.e(TAG, "ERRO: discordBtn não encontrado em fragment_home.xml");
+            Log.e(
+                    TAG,
+                    "ERRO: discordBtn não encontrado em fragment_home.xml"
+            );
         }
 
         if (webBtn == null) {
-            Log.e(TAG, "ERRO: webBtn não encontrado em fragment_home.xml");
+            Log.e(
+                    TAG,
+                    "ERRO: webBtn não encontrado em fragment_home.xml"
+            );
         }
 
         if (youtubeBtn == null) {
-            Log.e(TAG, "ERRO: youtubeBtn não encontrado em fragment_home.xml");
+            Log.e(
+                    TAG,
+                    "ERRO: youtubeBtn não encontrado em fragment_home.xml"
+            );
         }
 
         // ============================================================
-        // DISCORD / TESTE DO UPDATE SERVICE
+        // DISCORD
+        //
+        // IMPORTANTE:
+        // NÃO chamar:
+        //
+        // UpdateService.startUpdating(requireContext());
+        //
+        // O UpdateService atual usa Messenger e é iniciado pela
+        // UpdateActivity através do modo GameDataUpdate.
         // ============================================================
 
         if (discordBtn != null) {
+
             discordBtn.setOnClickListener(v -> {
 
                 Log.i(TAG, "========================================");
                 Log.i(TAG, "DISCORD BUTTON CLICKED");
-                Log.i(TAG, "INICIANDO TESTE DO UPDATE SERVICE");
+                Log.i(TAG, "INICIANDO UPDATE DO GAME DATA");
                 Log.i(TAG, "========================================");
 
                 try {
 
+                    // ------------------------------------------------
+                    // Verifica se o Fragment ainda está anexado.
+                    // ------------------------------------------------
+
                     if (!isAdded() || getActivity() == null) {
-                        Log.e(TAG, "Fragment não está anexado à Activity.");
+
+                        Log.e(
+                                TAG,
+                                "Fragment não está anexado à Activity."
+                        );
+
                         return;
                     }
 
                     Log.i(TAG, "Activity OK");
 
-                    Log.i(TAG, "Chamando UpdateService.startUpdating()...");
+                    // ------------------------------------------------
+                    // Abre a UpdateActivity.
+                    // ------------------------------------------------
 
-                    UpdateService.startUpdating(
-                            requireContext()
+                    Intent intent = new Intent(
+                            requireActivity(),
+                            UpdateActivity.class
                     );
 
-                    Log.i(TAG, "UpdateService.startUpdating() chamado.");
+                    // ------------------------------------------------
+                    // Diz para a UpdateActivity que queremos
+                    // verificar/baixar os arquivos do jogo.
+                    //
+                    // A UpdateActivity recebe esse modo e depois
+                    // envia Message 7 para o UpdateService.
+                    // ------------------------------------------------
 
-                    Toast.makeText(
-                            requireContext(),
-                            "Verificando atualizações...",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    intent.putExtra(
+                            "mode",
+                            UpdateActivity.UpdateMode.GameDataUpdate.name()
+                    );
+
+                    Log.i(
+                            TAG,
+                            "Update mode = " +
+                            UpdateActivity.UpdateMode.GameDataUpdate.name()
+                    );
+
+                    // ------------------------------------------------
+                    // Inicia a tela de atualização.
+                    // ------------------------------------------------
+
+                    startActivity(intent);
+
+                    Log.i(
+                            TAG,
+                            "UpdateActivity iniciada com sucesso."
+                    );
+
+                } catch (ActivityNotFoundException e) {
+
+                    Log.e(
+                            TAG,
+                            "UpdateActivity não encontrada no Manifest.",
+                            e
+                    );
+
+                    showError(
+                            "UpdateActivity não encontrada."
+                    );
 
                 } catch (IllegalStateException e) {
 
                     Log.e(
                             TAG,
-                            "Fragment/Contexto inválido ao iniciar UpdateService.",
+                            "Estado inválido ao iniciar UpdateActivity.",
                             e
                     );
 
@@ -110,12 +181,12 @@ public class HomeFragment extends Fragment {
 
                     Log.e(
                             TAG,
-                            "ERRO AO INICIAR UPDATE SERVICE",
+                            "ERRO AO INICIAR UPDATE ACTIVITY.",
                             e
                     );
 
                     showError(
-                            "Erro ao iniciar o UpdateService."
+                            "Erro ao iniciar a atualização."
                     );
                 }
             });
@@ -126,15 +197,23 @@ public class HomeFragment extends Fragment {
         // ============================================================
 
         if (webBtn != null) {
+
             webBtn.setOnClickListener(v -> {
 
-                Log.i(TAG, "Website button clicked");
+                Log.i(
+                        TAG,
+                        "Website button clicked"
+                );
 
                 try {
 
-                    String link = RemoteConfigManager.getString("website");
+                    String link =
+                            RemoteConfigManager.getString("website");
 
-                    Log.i(TAG, "Website URL: " + link);
+                    Log.i(
+                            TAG,
+                            "Website URL: " + link
+                    );
 
                     openUrl(link);
 
@@ -158,15 +237,23 @@ public class HomeFragment extends Fragment {
         // ============================================================
 
         if (youtubeBtn != null) {
+
             youtubeBtn.setOnClickListener(v -> {
 
-                Log.i(TAG, "YouTube button clicked");
+                Log.i(
+                        TAG,
+                        "YouTube button clicked"
+                );
 
                 try {
 
-                    String link = RemoteConfigManager.getString("youtube");
+                    String link =
+                            RemoteConfigManager.getString("youtube");
 
-                    Log.i(TAG, "YouTube URL: " + link);
+                    Log.i(
+                            TAG,
+                            "YouTube URL: " + link
+                    );
 
                     openUrl(link);
 
@@ -190,6 +277,7 @@ public class HomeFragment extends Fragment {
         // ============================================================
 
         if (btnPlay != null) {
+
             btnPlay.setOnClickListener(v -> {
 
                 Log.i(TAG, "========================================");
@@ -198,7 +286,14 @@ public class HomeFragment extends Fragment {
 
                 try {
 
-                    Log.i(TAG, "1. Verificando Activity...");
+                    // ------------------------------------------------
+                    // Verifica Activity.
+                    // ------------------------------------------------
+
+                    Log.i(
+                            TAG,
+                            "1. Verificando Activity..."
+                    );
 
                     if (!isAdded() || getActivity() == null) {
 
@@ -210,7 +305,14 @@ public class HomeFragment extends Fragment {
                         return;
                     }
 
-                    Log.i(TAG, "2. Activity OK");
+                    Log.i(
+                            TAG,
+                            "2. Activity OK"
+                    );
+
+                    // ------------------------------------------------
+                    // Cria Intent para o jogo.
+                    // ------------------------------------------------
 
                     Log.i(
                             TAG,
@@ -227,9 +329,19 @@ public class HomeFragment extends Fragment {
                             Intent.FLAG_ACTIVITY_SINGLE_TOP
                     );
 
-                    Log.i(TAG, "4. Intent criado");
+                    Log.i(
+                            TAG,
+                            "4. Intent criado"
+                    );
 
-                    Log.i(TAG, "5. Iniciando SAMP...");
+                    // ------------------------------------------------
+                    // Inicia o jogo.
+                    // ------------------------------------------------
+
+                    Log.i(
+                            TAG,
+                            "5. Iniciando SAMP..."
+                    );
 
                     startActivity(intent);
 
@@ -357,10 +469,21 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        Toast.makeText(
-                requireContext(),
-                message,
-                Toast.LENGTH_LONG
-        ).show();
+        try {
+
+            Toast.makeText(
+                    requireContext(),
+                    message,
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } catch (Throwable e) {
+
+            Log.e(
+                    TAG,
+                    "Erro ao mostrar mensagem: " + message,
+                    e
+            );
+        }
     }
-}
+                            }
