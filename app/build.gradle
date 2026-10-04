@@ -4,13 +4,6 @@ plugins {
     id 'com.google.firebase.crashlytics'
 }
 
-def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
 android {
     compileSdk 36
 
@@ -54,9 +47,8 @@ android {
         jniLibs {
             excludes += ['META-INF/*']
 
-            // O ShadowHook chega por dois caminhos:
-            // CMake/Prefab e dependência Gradle.
-            // Mantemos apenas uma cópia no APK.
+            // Evita conflito entre ShadowHook vindo do CMake/Prefab
+            // e ShadowHook vindo da dependência Gradle.
             pickFirst 'lib/arm64-v8a/libshadowhook.so'
         }
 
@@ -76,9 +68,11 @@ android {
     signingConfigs {
         release {
             storeFile file("keystore/gta-release.jks")
-            storePassword keystoreProperties['storePassword'] ?: System.getenv("KEYSTORE_PASSWORD")
-            keyAlias keystoreProperties['keyAlias'] ?: System.getenv("KEY_ALIAS") ?: "gta-release"
-            keyPassword keystoreProperties['keyPassword'] ?: System.getenv("KEY_PASSWORD")
+
+            // Credenciais fixas para o build Release.
+            storePassword "hiago123"
+            keyAlias "gta-release"
+            keyPassword "hiago123"
         }
     }
 
@@ -87,7 +81,10 @@ android {
             debuggable true
             jniDebuggable true
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            proguardFiles getDefaultProguardFile(
+                'proguard-android-optimize.txt'
+            ), 'proguard-rules.pro'
 
             ndk {
                 debugSymbolLevel 'FULL'
@@ -110,7 +107,10 @@ android {
             debuggable false
             jniDebuggable false
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            proguardFiles getDefaultProguardFile(
+                'proguard-android-optimize.txt'
+            ), 'proguard-rules.pro'
         }
     }
 
@@ -130,14 +130,21 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation fileTree(
+        dir: "libs",
+        include: ["*.jar"]
+    )
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
+
     implementation "com.google.android.material:material:1.9.0"
+
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     implementation 'androidx.navigation:navigation-fragment:2.7.2'
+
     implementation 'androidx.navigation:navigation-ui:2.7.2'
+
     implementation 'androidx.core:core-ktx:1.12.0'
 
     implementation 'com.google.android.play:asset-delivery:2.3.0'
@@ -145,9 +152,11 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation 'androidx.tonyodev.fetch2:xfetch2:3.1.6'
+
     implementation 'androidx.tonyodev.fetch2okhttp:xfetch2okhttp:3.1.6'
 
     implementation 'com.android.volley:volley:1.2.1'
@@ -155,17 +164,23 @@ dependencies {
     implementation 'com.intuit.sdp:sdp-android:1.1.0'
 
     implementation 'com.google.firebase:firebase-analytics:21.2.0'
+
     implementation 'com.google.firebase:firebase-crashlytics-ndk:18.3.5'
+
     implementation platform('com.google.firebase:firebase-bom:30.1.0')
+
     implementation 'com.google.firebase:firebase-messaging:23.1.1'
+
     implementation 'com.google.firebase:firebase-config'
 
     implementation "androidx.datastore:datastore-preferences:1.0.0"
+
     implementation "androidx.datastore:datastore-core:1.0.0"
 
     implementation 'org.ini4j:ini4j:0.5.4'
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'
+
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 
     implementation("androidx.lifecycle:lifecycle-process:2.6.2")
