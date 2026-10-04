@@ -24,9 +24,11 @@ public class HomeFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
 
         Log.i(TAG, "onCreateView()");
 
@@ -58,23 +60,63 @@ public class HomeFragment extends Fragment {
         }
 
         // ============================================================
-        // DISCORD
+        // DISCORD / TESTE DO UPDATE SERVICE
         // ============================================================
 
         if (discordBtn != null) {
             discordBtn.setOnClickListener(v -> {
-                Log.i(TAG, "Discord button clicked");
+
+                Log.i(TAG, "========================================");
+                Log.i(TAG, "DISCORD BUTTON CLICKED");
+                Log.i(TAG, "INICIANDO TESTE DO UPDATE SERVICE");
+                Log.i(TAG, "========================================");
 
                 try {
-                    String link = RemoteConfigManager.getString("discord");
 
-                    Log.i(TAG, "Discord URL: " + link);
+                    if (!isAdded() || getActivity() == null) {
+                        Log.e(TAG, "Fragment não está anexado à Activity.");
+                        return;
+                    }
 
-                    openUrl(link);
+                    Log.i(TAG, "Activity OK");
+
+                    Log.i(TAG, "Chamando UpdateService.startUpdating()...");
+
+                    UpdateService.startUpdating(
+                            requireContext()
+                    );
+
+                    Log.i(TAG, "UpdateService.startUpdating() chamado.");
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Verificando atualizações...",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                } catch (IllegalStateException e) {
+
+                    Log.e(
+                            TAG,
+                            "Fragment/Contexto inválido ao iniciar UpdateService.",
+                            e
+                    );
+
+                    showError(
+                            "Não foi possível iniciar a atualização."
+                    );
 
                 } catch (Throwable e) {
-                    Log.e(TAG, "Erro ao abrir Discord", e);
-                    showError("Não foi possível abrir o Discord.");
+
+                    Log.e(
+                            TAG,
+                            "ERRO AO INICIAR UPDATE SERVICE",
+                            e
+                    );
+
+                    showError(
+                            "Erro ao iniciar o UpdateService."
+                    );
                 }
             });
         }
@@ -85,9 +127,11 @@ public class HomeFragment extends Fragment {
 
         if (webBtn != null) {
             webBtn.setOnClickListener(v -> {
+
                 Log.i(TAG, "Website button clicked");
 
                 try {
+
                     String link = RemoteConfigManager.getString("website");
 
                     Log.i(TAG, "Website URL: " + link);
@@ -95,8 +139,16 @@ public class HomeFragment extends Fragment {
                     openUrl(link);
 
                 } catch (Throwable e) {
-                    Log.e(TAG, "Erro ao abrir website", e);
-                    showError("Não foi possível abrir o site.");
+
+                    Log.e(
+                            TAG,
+                            "Erro ao abrir website",
+                            e
+                    );
+
+                    showError(
+                            "Não foi possível abrir o site."
+                    );
                 }
             });
         }
@@ -107,9 +159,11 @@ public class HomeFragment extends Fragment {
 
         if (youtubeBtn != null) {
             youtubeBtn.setOnClickListener(v -> {
+
                 Log.i(TAG, "YouTube button clicked");
 
                 try {
+
                     String link = RemoteConfigManager.getString("youtube");
 
                     Log.i(TAG, "YouTube URL: " + link);
@@ -117,8 +171,16 @@ public class HomeFragment extends Fragment {
                     openUrl(link);
 
                 } catch (Throwable e) {
-                    Log.e(TAG, "Erro ao abrir YouTube", e);
-                    showError("Não foi possível abrir o YouTube.");
+
+                    Log.e(
+                            TAG,
+                            "Erro ao abrir YouTube",
+                            e
+                    );
+
+                    showError(
+                            "Não foi possível abrir o YouTube."
+                    );
                 }
             });
         }
@@ -139,13 +201,21 @@ public class HomeFragment extends Fragment {
                     Log.i(TAG, "1. Verificando Activity...");
 
                     if (!isAdded() || getActivity() == null) {
-                        Log.e(TAG, "Fragment não está anexado à Activity.");
+
+                        Log.e(
+                                TAG,
+                                "Fragment não está anexado à Activity."
+                        );
+
                         return;
                     }
 
                     Log.i(TAG, "2. Activity OK");
 
-                    Log.i(TAG, "3. Criando Intent para SAMP.class");
+                    Log.i(
+                            TAG,
+                            "3. Criando Intent para SAMP.class"
+                    );
 
                     Intent intent = new Intent(
                             requireActivity(),
@@ -163,18 +233,28 @@ public class HomeFragment extends Fragment {
 
                     startActivity(intent);
 
-                    Log.i(TAG, "6. startActivity() executado");
+                    Log.i(
+                            TAG,
+                            "6. startActivity() executado"
+                    );
 
                     requireActivity().overridePendingTransition(
                             android.R.anim.fade_in,
                             android.R.anim.fade_out
                     );
 
-                    Log.i(TAG, "7. Transição executada");
+                    Log.i(
+                            TAG,
+                            "7. Transição executada"
+                    );
 
                 } catch (ActivityNotFoundException e) {
 
-                    Log.e(TAG, "SAMP Activity não encontrada no Manifest.", e);
+                    Log.e(
+                            TAG,
+                            "SAMP Activity não encontrada no Manifest.",
+                            e
+                    );
 
                     showError(
                             "Erro: SAMP não foi encontrada no AndroidManifest."
@@ -182,7 +262,11 @@ public class HomeFragment extends Fragment {
 
                 } catch (IllegalStateException e) {
 
-                    Log.e(TAG, "Estado inválido ao iniciar SAMP.", e);
+                    Log.e(
+                            TAG,
+                            "Estado inválido ao iniciar SAMP.",
+                            e
+                    );
 
                     showError(
                             "Erro ao iniciar o jogo."
@@ -190,7 +274,11 @@ public class HomeFragment extends Fragment {
 
                 } catch (Throwable e) {
 
-                    Log.e(TAG, "Erro Java ao iniciar SAMP.", e);
+                    Log.e(
+                            TAG,
+                            "Erro Java ao iniciar SAMP.",
+                            e
+                    );
 
                     showError(
                             "Erro ao iniciar o jogo."
@@ -209,8 +297,16 @@ public class HomeFragment extends Fragment {
     private void openUrl(String url) {
 
         if (url == null || url.trim().isEmpty()) {
-            Log.e(TAG, "URL vazia ou nula.");
-            showError("Link não configurado.");
+
+            Log.e(
+                    TAG,
+                    "URL vazia ou nula."
+            );
+
+            showError(
+                    "Link não configurado."
+            );
+
             return;
         }
 
@@ -227,7 +323,11 @@ public class HomeFragment extends Fragment {
 
         } catch (ActivityNotFoundException e) {
 
-            Log.e(TAG, "Nenhum aplicativo pode abrir: " + url, e);
+            Log.e(
+                    TAG,
+                    "Nenhum aplicativo pode abrir: " + url,
+                    e
+            );
 
             showError(
                     "Nenhum aplicativo pode abrir este link."
@@ -235,7 +335,11 @@ public class HomeFragment extends Fragment {
 
         } catch (Throwable e) {
 
-            Log.e(TAG, "Erro ao abrir URL: " + url, e);
+            Log.e(
+                    TAG,
+                    "Erro ao abrir URL: " + url,
+                    e
+            );
 
             showError(
                     "Não foi possível abrir o link."
