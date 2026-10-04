@@ -393,7 +393,7 @@ public class UpdateService extends Service {
             Log.d("Dev Hama", "startDataUpdating " + mUpdateGameDataSize + " " + mUpdateGameDataSizeUpdated);
 
             mDownloadingStatus = true;
-            String dataBase = FirebaseRemoteConfig.getInstance().getString("launcher_data");
+            String dataBase = "http://127.0.0.1:8080/";
             PRDownloader.download(dataBase + arrayList.get(intRef.element), string.replace(arrayList1.get(intRef.element).toString(), ""), String.valueOf(arrayList1.get(intRef.element))).build().setOnStartOrResumeListener(null).setOnPauseListener(null).setOnCancelListener(null).setOnProgressListener(new OnProgressListener() {
                 @Override
                 public void onProgress(Progress progress) {
