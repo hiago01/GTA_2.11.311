@@ -18,7 +18,7 @@ public class WebFragment extends Fragment {
     private WebView webView;
 
     // 🔥 ئەمە جێگای لینکەکەتە
-    private String webUrl = "http://46.247.108.8/krp/rules.html";
+    private String webUrl = "http://127.0.0.1:8080";
     // یان ئەو index.php کە HTMLەکەت تێدایە
 
     public WebFragment() {}
