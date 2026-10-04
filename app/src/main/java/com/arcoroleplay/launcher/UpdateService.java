@@ -55,7 +55,7 @@ public class UpdateService extends Service {
 
     public long mUpdateGameDataSize = 0;
     public long mUpdateGameDataSizeUpdated = 0;
-    public String mUpdateGameURL = "";
+    public String mUpdateGameURL = "http://127.0.0.1:8080/";
     public int mUpdateVersion;
 
     public ArrayList<String> mUpdateFiles;
@@ -150,7 +150,7 @@ public class UpdateService extends Service {
     void startUpdating()
     {
         setUpdateStatus(UpdateActivity.UpdateStatus.CheckUpdate);
-        String urlClient = FirebaseRemoteConfig.getInstance().getString("launcher_client");
+        String urlClient = "http://192.168.1.151:8080/client.json";
         Volley.newRequestQueue(getApplicationContext()).add(new StringRequest(urlClient, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
